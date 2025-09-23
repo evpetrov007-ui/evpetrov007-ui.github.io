@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Танковая битва: Угадай число</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: #2a2a2a url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23333"/><path d="M0,0 L100,100 M100,0 L0,100" stroke="%23222" stroke-width="1"/></svg>');
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(60, 60, 60, 0.9);
+            border: 8px solid #5a5a5a;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            margin-top: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to right, #8B4513, #A0522D, #8B4513);
+            z-index: 1;
+        }
+        
+        .container::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(to right, #8B4513, #A0522D, #8B4513);
+            z-index: 1;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #8B4513;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px #000;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #c0c0c0;
+            font-style: italic;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .info-box {
+            background: linear-gradient(to bottom, #5a5a5a, #444);
+            border: 3px solid #8B4513;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .info-title {
+            font-size: 1rem;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        #guessInput {
+            padding: 12px 15px;
+            font-size: 1.2rem;
+            width: 200px;
+            border: 3px solid #8B4513;
+            border-radius: 5px;
+            background: #444;
+            color: #fff;
+            text-align: center;
+        }
+        
+        #guessInput:focus {
+            outline: none;
+            border-color: #FFD700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            background: linear-gradient(to bottom, #8B4513, #5a2d0c);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to bottom, #9c5c2c, #6b3d14);
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+        
+        .btn:active {
+            transform: translateY(2px);
+        }
+        
+        .btn:disabled {
+            background: #5a5a5a;
+            color: #888;
+            border-color: #888;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        
+        .message-area {
+            min-height: 100px;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #8B4513;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #message {
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        #hint {
+            color: #c0c0c0;
+            font-style: italic;
+        }
+        
+        .history {
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid #8B4513;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .history-title {
+            color: #FFD700;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        #guessList {
+            list-style-type: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        #guessList li {
+            background: linear-gradient(to bottom, #5a5a5a, #444);
+            border: 2px solid #8B4513;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-weight: bold;
+        }
+        
+        .tank-decoration {
+            position: absolute;
+            bottom: -30px;
+            right: -30px;
+            width: 200px;
+            height: 100px;
+            background: #5a5a5a;
+            border-radius: 10px 50% 50% 10px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .tank-decoration::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: -30px;
+            width: 60px;
+            height: 60px;
+            background: #444;
+            border-radius: 50%;
+        }
+        
+        .tank-decoration::after {
+            content: "∎";
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            font-size: 40px;
+            color: #333;
+            transform: rotate(45deg);
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .input-area {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #guessInput {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Танковая битва: Угадай число</h1>
+            <p class="subtitle">Уничтожьте вражеский танк, угадав загаданное число!</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="game-info">
+                <div class="info-box">
+                    <div class="info-title">Диапазон</div>
+                    <div class="info-value">1 - 100</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-title">Попытки</div>
+                    <div class="info-value" id="attempts">10</div>
+                </div>
+                <div class="info-box">
+                    <div class="info-title">Рекорд</div>
+                    <div class="info-value" id="record">-</div>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="number" id="guessInput" min="1" max="100" placeholder="Введите число">
+                <button class="btn" id="guessBtn">Выстрелить!</button>
+            </div>
+            
+            <div class="message-area">
+                <div id="message">Введите число от 1 до 100 и нажмите "Выстрелить!"</div>
+                <div id="hint"></div>
+            </div>
+            
+            <button class="btn" id="restartBtn">Новая игра</button>
+            
+            <div class="history">
+                <div class="history-title">История выстрелов:</div>
+                <ul id="guessList"></ul>
+            </div>
+        </div>
+        
+        <div class="tank-decoration"></div>
+    </div>
+
+    <script>
+        // Элементы DOM
+        const guessInput = document.getElementById('guessInput');
+        const guessBtn = document.getElementById('guessBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const message = document.getElementById('message');
+        const hint = document.getElementById('hint');
+        const attemptsDisplay = document.getElementById('attempts');
+        const recordDisplay = document.getElementById('record');
+        const guessList = document.getElementById('guessList');
+        
+        // Игровые переменные
+        let targetNumber;
+        let attemptsLeft;
+        let gameOver;
+        let record = localStorage.getItem('tankGameRecord') || '-';
+        
+        // Инициализация игры
+        function initGame() {
+            targetNumber = Math.floor(Math.random() * 100) + 1;
+            attemptsLeft = 10;
+            gameOver = false;
+            
+            attemptsDisplay.textContent = attemptsLeft;
+            recordDisplay.textContent = record;
+            message.textContent = 'Введите число от 1 до 100 и нажмите "Выстрелить!"';
+            hint.textContent = '';
+            guessList.innerHTML = '';
+            guessInput.value = '';
+            guessInput.disabled = false;
+            guessBtn.disabled = false;
+            
+            console.log('Загаданное число (для тестирования):', targetNumber);
+        }
+        
+        // Обработка попытки угадать число
+        function makeGuess() {
+            if (gameOver) return;
+            
+            const guess = parseInt(guessInput.value);
+            
+            // Проверка ввода
+            if (isNaN(guess) || guess < 1 || guess > 100) {
+                message.textContent = 'Ошибка! Введите число от 1 до 100.';
+                message.style.color = '#ff6b6b';
+                return;
+            }
+            
+            // Добавление в историю
+            const listItem = document.createElement('li');
+            listItem.textContent = guess;
+            guessList.appendChild(listItem);
+            
+            // Проверка числа
+            attemptsLeft--;
+            attemptsDisplay.textContent = attemptsLeft;
+            
+            if (guess === targetNumber) {
+                // Победа
+                message.textContent = 'Поздравляем! Вы уничтожили вражеский танк!';
+                message.style.color = '#4ecdc4';
+                hint.textContent = `Загаданное число: ${targetNumber}`;
+                gameOver = true;
+                guessInput.disabled = true;
+                guessBtn.disabled = true;
+                
+                // Обновление рекорда
+                const attemptsUsed = 10 - attemptsLeft;
+                if (record === '-' || attemptsUsed < parseInt(record)) {
+                    record = attemptsUsed;
+                    recordDisplay.textContent = record;
+                    localStorage.setItem('tankGameRecord', record);
+                    hint.textContent += ` Новый рекорд: ${record} попыток!`;
+                }
+            } else if (attemptsLeft === 0) {
+                // Проигрыш
+                message.textContent = 'Игра окончена! Вражеский танк ушел.';
+                message.style.color = '#ff6b6b';
+                hint.textContent = `Загаданное число: ${targetNumber}`;
+                gameOver = true;
+                guessInput.disabled = true;
+                guessBtn.disabled = true;
+            } else {
+                // Подсказка
+                if (guess < targetNumber) {
+                    message.textContent = 'Промах! Ваш снаряд пролетел мимо.';
+                    hint.textContent = 'Попробуйте число побольше.';
+                } else {
+                    message.textContent = 'Промах! Ваш снаряд перелетел.';
+                    hint.textContent = 'Попробуйте число поменьше.';
+                }
+                message.style.color = '#FFD700';
+            }
+            
+            // Очистка поля ввода
+            guessInput.value = '';
+            guessInput.focus();
+        }
+        
+        // Обработчики событий
+        guessBtn.addEventListener('click', makeGuess);
+        
+        restartBtn.addEventListener('click', initGame);
+        
+        guessInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                makeGuess();
+            }
+        });
+        
+        // Запуск игры при загрузке страницы
+        window.addEventListener('load', initGame);
+    </script>
+</body>
+</html>
